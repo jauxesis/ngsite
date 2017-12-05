@@ -11,11 +11,11 @@ import * as html2canvas from 'html2canvas';
 })
 export class AppComponent {
   title = 'app';
-
+ 
 
 
   capturescreen(){
-    html2canvas(document.body).then((canvas)=>{
+    html2canvas(document.body,{logging:false}).then((canvas)=>{
       console.log(canvas);
 
       var getImage = canvas.toDataURL(); // default is png 
@@ -42,27 +42,20 @@ export class AppComponent {
     serv.loadFile();
   }
 
-
+ 
   makeissue(){
-    html2canvas(document.body,{
-      logging:false
-    }).then(function(canvas) {
-        console.log(canvas)
-        var d = canvas.toDataURL();// "image/png"
-        console.log("detail",d)
-        // document.body.appendChild(canvas);
-    })
-    // let doc = {
-    //   _id:"testbcdef@mail.com",
-    //   description:"Code failed due to data error in page.",
-    //   page:location.href
-    // }
+    
+    let doc = {
+      _id:"testbcdef@mail.com",
+      issues:"Page Level Issues Must be added"
+    }
     // this.serv.insertIssues(doc);
+    this.serv.updateIssue("18testbcdef@mail.com");
     // .then(
-    //   d=>{
+    //   d=>{ 
     //     console.log(d)
     //   },
-    //   e=>{
+    //   e=>{ 
     //     console.log(e)
     //   }
     // );

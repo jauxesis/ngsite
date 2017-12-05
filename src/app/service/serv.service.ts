@@ -7,7 +7,8 @@ import * as file from 'file-system';
 import * as Raven from 'raven-js';
 
 import PouchDB from 'pouchdb';
-
+//import PouchDB.plugin from 'pouchdb-find';
+import * as html2canvas from 'html2canvas';
 @Injectable()
 export class ServService {
 
@@ -19,6 +20,7 @@ export class ServService {
     this.pdb = new PouchDB("http://45.55.211.36:5984/list/");
 
     this.getData();
+    this.getScreen();
   } 
 
   getData(){
@@ -59,51 +61,138 @@ export class ServService {
         console.error("error",e)
       }
     });
-    // return new Promise((resolve,reject)=>{
-    //     this.pdb.put(doc).then(
-    //       d =>{
-    //         // console.log(d,"recorded issue")
-    //         resolve(d)
-    //       }
-    //     ).catch(function(e){
-    //       // if(e.name == "conflict"){
-    //       //   console.log("im conflict","call another update")
-    //       // }else{
-    //       //   console.error("error",e.error)
-    //       // }
-    //       reject(e)
-    //     });
-    //   })
-  }
+  } 
   updateIssue(id){
     this.pdb.get(id).then((arr) =>{
       console.log("then1",arr);
-      // if (arr.name === 'not_found') {
-      //   console.log("notfound",arr.name)
-      //   // return {
-      //   //   _id: 'config',
-      //   //   background: 'blue',
-      //   //   foreground: 'white',
-      //   //   sparkly: 'false'
-      //   // };
-      // } else { // hm, some other error
-      //   throw arr;
+
+      var list = arr.issuelist;
+      var getcount = arr.issuescount;
+      // console.log("issue",list);
+      // if(list == null || list == undefined || list == ""){
+      //   let d = [];
+      //   d.push(list)
+      //   let c = getcount+1;
+      //   d.push({
+      //     _id:'issue'+c,
+      //     data:{
+      //       tracker:'Issue tracker'+c+' in page',
+      //       timestamp: new Date()
+      //     }
+      //   });
+      //   arr.issuelist = d;
+      //   arr.issuescount = c;
+      //   return this.pdb.put(arr);  
+      // }else{
+        console.log("else",list)
+        let d = list;
+        let c = getcount+1;
+        let issueid ='issue'+c; 
+        // d.push(list)
+        d.push({
+          _id:issueid,
+          data:{
+            tracker:'Issue tracker'+c+' in page',
+            timestamp: new Date()
+          }
+        });
+        arr.issuelist = d;
+        arr.issuescount = c;
+        this.saveinScreenCast(issueid,id);
+        return this.pdb.put(arr);
       // }
-      arr.name = {
-        _id:'issue1',
-        tracker:'Issue tracker1 in page'
-      };
-      return this.pdb.put(arr);
-    }).then( (configDoc) =>{
-      console.log("then",configDoc)
-      // sweet, here is our configDoc
-    }).catch((err) =>{
+      
+    })
+    // .then( (configDoc) =>{
+    //   // console.log("then",configDoc)
+    //   // sweet, here is our configDoc
+    // })
+    .catch((err) =>{
       console.log("catch",err)
       // handle any errors
+      this.insertAtFirstEntry(id);
+    });
+  }
+  insertAtFirstEntry(id){   
+    let issueid = 'issue'+1;
+    let doc = {
+      _id:id,
+      issuescount:1,
+      issuelist:[{
+        _id:issueid,
+        data:{
+          tracker:'Issue tracker'+'1'+' in page',
+          timestamp: new Date()
+        }
+      }]
+    }
+    this.saveFirstEntry(doc);
+    this.saveinScreenCast(issueid,id);
+  }
+  saveFirstEntry(doc){
+    this.pdb.put(doc).then(
+      d =>{
+        console.log(d,"recorded issued")
+      }
+    ).catch((e)=>{
+      // console.info("inthen:",e)
+      if(e.name == "conflict"){
+        console.log("im conflict","call another update")
+      }else{
+        console.error("error",e)
+      }
     });
   }
 
+  saveinScreenCast(issueid,id){
+    let castDB = new PouchDB("http://45.55.211.36:5984/listissuesscreen/");
+    html2canvas(document.body,{logging:false}).then((canvas)=>{
+      // console.log(canvas);
 
+      var getImage = canvas.toDataURL(); // default is png 
+      // console.log(getImage)
+
+      castDB.post({
+        email:id,
+        key:issueid,
+        issueid:issueid,
+        screen:getImage
+      },(err,result)=>{
+        if(err){
+          console.log("Screen not Captured")
+        }else{
+          console.log("ScreenCaptured result:",result)
+        }
+      })
+      .then(d=>{
+        console.log("ScreenCaptured:",d)
+      });
+    })
+  }
+
+
+  getScreen(){
+    let sc = new PouchDB("http://45.55.211.36:5984/listissuesscreen/");
+
+    sc.allDocs({include_docs:false})
+    .then(
+      d=>{
+        // console.log(d,d.rows.length)
+        d.rows.forEach((value,key) => {
+          // console.log(value,key)
+          sc.get(value.id).then(
+            dd=>{
+              if(dd.issueid == 'issue1')
+                console.log(dd);
+            }
+          )
+        });
+      },
+      e=>{
+        console.log(e)
+      }
+    );
+  }
 
   sayHello(){
     console.log("Hello")

@@ -7,8 +7,13 @@ import * as file from 'file-system';
 import * as Raven from 'raven-js';
 
 import PouchDB from 'pouchdb';
-//import PouchDB.plugin from 'pouchdb-find';
+
 import * as html2canvas from 'html2canvas';
+
+import * as lodash from 'lodash';
+
+import * as moment from 'moment';
+
 @Injectable()
 export class ServService {
 
@@ -36,17 +41,6 @@ export class ServService {
 
   insertIssues(doc){
 
-    // this.pdb.post({
-    //   name:'alexpa',
-    //   age:24
-    // },(err,result)=>{
-    //   if(err){
-    //     console.log("inerr",err)
-    //   }else{
-    //     console.log(result)
-    //   }
-    // });
-
     // console.log("inserting",doc)
     this.pdb.put(doc).then(
       d =>{
@@ -56,13 +50,38 @@ export class ServService {
       // console.info("inthen:",e)
       if(e.name == "conflict"){
         console.log("im conflict","call another update")
-        this.updateIssue(doc._id);
+        // this.updateIssue(doc._id);
       }else{
         console.error("error",e)
       }
     });
   } 
-  updateIssue(id){
+  getIP(){
+    console.log(localStorage.getItem("dummyuserinfo"))
+  }
+
+  letsIssuing(id,page,func,description){
+    this.http.get("https://freegeoip.net/json/")
+    .subscribe(
+      d=>{
+        console.info(d)
+        let dt = JSON.parse(JSON.stringify(d));
+        let dt2 = JSON.parse(dt._body);
+        console.log(dt2,dt2.ip);
+        localStorage.setItem("dummyuserinfo",dt._body)
+        this.updateIssue(id,page,func,description);
+        this.getIP();
+      },
+      e=>{
+        console.log(e);
+        this.updateIssue(id,page,func,description);
+      }
+    )
+  }
+  updateIssue(id,page,func,description){
+
+    let userinfo = JSON.parse(localStorage.getItem("dummyuserinfo"));
+
     this.pdb.get(id).then((arr) =>{
       console.log("then1",arr);
 
@@ -93,8 +112,18 @@ export class ServService {
           _id:issueid,
           data:{
             tracker:'Issue tracker'+c+' in page',
-            timestamp: new Date()
-          }
+            timestamp: new Date(),
+            ip:userinfo.ip,
+            country:userinfo.country_name,
+            city:userinfo.city,
+            time_zone:userinfo.time_zone,
+            latitude:userinfo.latitude,
+            longitude:userinfo.longitude,
+            page:page,
+            schema:func,
+            description:description
+          },
+          momento:moment().unix()
         });
         arr.issuelist = d;
         arr.issuescount = c;
@@ -110,10 +139,11 @@ export class ServService {
     .catch((err) =>{
       console.log("catch",err)
       // handle any errors
-      this.insertAtFirstEntry(id);
+      this.insertAtFirstEntry(id,page,func,description);
     });
   }
-  insertAtFirstEntry(id){   
+  insertAtFirstEntry(id,page,func,description){   
+    let userinfo = JSON.parse(localStorage.getItem("dummyuserinfo"));
     let issueid = 'issue'+1;
     let doc = {
       _id:id,
@@ -122,8 +152,18 @@ export class ServService {
         _id:issueid,
         data:{
           tracker:'Issue tracker'+'1'+' in page',
-          timestamp: new Date()
-        }
+          timestamp: new Date(),
+          ip:userinfo.ip,
+          country:userinfo.country_name,
+          city:userinfo.city,
+          time_zone:userinfo.time_zone,
+          latitude:userinfo.latitude,
+          longitude:userinfo.longitude,
+          page:page,
+          schema:func,
+          description:description
+        },
+        momento:moment().unix()
       }]
     }
     this.saveFirstEntry(doc);

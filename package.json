@@ -26,6 +26,7 @@
     "fs": "0.0.1-security",
     "html2canvas": "^1.0.0-alpha.1",
     "lodash": "^4.17.4",
+    "moment": "^2.19.3",
     "pouchdb": "^6.3.4",
     "pouchdb-find": "^6.3.4",
     "raven-js": "^3.20.1",

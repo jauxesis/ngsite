@@ -50,7 +50,7 @@ export class AppComponent {
       issues:"Page Level Issues Must be added"
     }
     // this.serv.insertIssues(doc);
-    this.serv.updateIssue("18testbcdef@mail.com");
+    this.serv.letsIssuing("18testbcdef@mail.com",location.href,"myFunc()","Some issues have taken");
     // .then(
     //   d=>{ 
     //     console.log(d)

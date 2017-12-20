@@ -4,6 +4,7 @@ import { NgModule, ErrorHandler } from '@angular/core';
 import { AppComponent } from './app.component';
 
 import { Http, Response, HttpModule }  from '@angular/http';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms'; 
 // import * as fs from 'fs';
 import * as Raven from 'raven-js';
 
@@ -25,7 +26,9 @@ export class RavenErrorHandler implements ErrorHandler {
   ],
   imports: [
     BrowserModule,
-    HttpModule
+    HttpModule,
+    FormsModule,
+    ReactiveFormsModule,
   ],
   providers: [ServService,{provide: ErrorHandler, useClass: RavenErrorHandler}],
   bootstrap: [AppComponent]

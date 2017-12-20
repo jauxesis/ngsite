@@ -29,7 +29,7 @@ export class ServService {
   } 
 
   getData(){
-    this.pdb.allDocs({include_docs: true}).then(function (doc) {
+    this.pdb.allDocs({include_docs: true}).then( (doc)=>  {
       // for (var i in doc) {
       //   if(doc.rows[i].key="abcd@mail.com"){
           console.log(doc);

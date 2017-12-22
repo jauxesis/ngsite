@@ -7,35 +7,36 @@ import * as html2canvas from 'html2canvas';
 import {FormBuilder, FormGroup, Validators} from "@angular/forms";
 import * as IPFS from 'ipfs';
 import * as ipfsAPI from 'ipfs-api';
+import * as ipfs from 'ipfs-js';
 import { Http, Response, Headers, RequestOptions, URLSearchParams } from '@angular/http';
 
-const node = new IPFS({
-  repo: 'ipfs-' + Math.random(),
-  init: true, // default
-  // init: false,
-  // init: {
-  //   bits: 1024 // size of the RSA key generated
-  // },
-  start: true, // default
-  // start: false,
-  EXPERIMENTAL: { // enable experimental features
-    pubsub: true,
-    sharding: true, // enable dir sharding
-    dht: true // enable KadDHT, currently not interopable with go-ipfs
-  },
-  config: { // overload the default IPFS node config, find defaults at https://github.com/ipfs/js-ipfs/tree/master/src/core/runtime
-    Addresses: {
-      Swarm: [
-        "/ip4/0.0.0.0/tcp/4001",
-        "/ip6/::/tcp/4001"
-      ]
-    }
-  },
-  libp2p: { // add custom modules to the libp2p stack of your node
-    modules: {}
-  }
-})
-
+// const node = new IPFS({
+//   repo: 'ipfs-' + Math.random(),
+//   init: true, // default
+//   // init: false,
+//   // init: {
+//   //   bits: 1024 // size of the RSA key generated
+//   // },
+//   start: true, // default
+//   // start: false,
+//   EXPERIMENTAL: { // enable experimental features
+//     pubsub: true,
+//     sharding: true, // enable dir sharding
+//     dht: true // enable KadDHT, currently not interopable with go-ipfs
+//   },
+//   config: { // overload the default IPFS node config, find defaults at https://github.com/ipfs/js-ipfs/tree/master/src/core/runtime
+//     Addresses: {
+//       Swarm: [
+//         "/ip4/0.0.0.0/tcp/4001",
+//         "/ip6/::/tcp/4001"
+//       ]
+//     }
+//   },
+//   libp2p: { // add custom modules to the libp2p stack of your node
+//     modules: {}
+//   }
+// })
+// var ipfs;
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
@@ -80,7 +81,7 @@ export class AppComponent {
     this.http.get("http://localhost:5001/api/v0/cat?arg=QmUVTKsrYJpaxUT7dr9FpKq6AoKHhEM7eG1ZHGL56haKLG")
     .subscribe(
       (data)=>{
-       // console.log("ipfsdata1:",data);
+       console.log("ipfscatdata1:",data);
       },
       (e)=>{
        // console.log("ipfserr1:",e)
@@ -104,22 +105,22 @@ export class AppComponent {
     // }) // leaving out the arguments will default to these values
     
     // // or connect with multiaddr
-    var ipfs = ipfsAPI('/ip4/127.0.0.1/tcp/5001')
+    // ipfs = ipfsAPI('/ip4/127.0.0.1/tcp/5001')
     
     // // or using options
-    // var ipfs = ipfsAPI({host: 'localhost', port: '5001', protocol: 'http'})
-
+    // ipfs = ipfsAPI({host: 'localhost', port: '5001', protocol: 'http'})
+    ipfs.setProvider({host: 'localhost', port: '5001'})
     console.log("apiconf:",ipfs)
     // ipfs.files.get("QmUVTKsrYJpaxUT7dr9FpKq6AoKHhEM7eG1ZHGL56haKLG",(data)=>{
     //   console.log("ipfsdata:",data)
-    // });
+    // }); 
 
-    ipfs.files.cat("QmUVTKsrYJpaxUT7dr9FpKq6AoKHhEM7eG1ZHGL56haKLG",function(data){
-      console.log("ipfsdata:",data)
+    ipfs.cat("QmUVTKsrYJpaxUT7dr9FpKq6AoKHhEM7eG1ZHGL56haKLG",function(err,data){
+      console.log("ipfsincatdata:",JSON.stringify(data))
     });
 
 
-    console.log("ipfs.repo.stat()",ipfs.repo.stat())
+    // console.log("ipfs.repo.stat()",ipfs.repo.stat())
     // .subscribe(
     //   d=>{
     //     console.log(d)
@@ -130,16 +131,23 @@ export class AppComponent {
     // )
   }
 
+  input:any;
   posts(){
-    this.http.post("http://localhost:5001/api/v0/add",{file:this.form.value.file})
-    .subscribe(
-      d=>{
-        console.log(d)
-      },
-      e=>{
-        console.log(e)
-      }
-    )
+    // this.http.post("http://localhost:5001/api/v0/add",{file:this.form.value.file})
+    // .subscribe(
+    //   d=>{
+    //     console.log(d)
+    //   },
+    //   e=>{
+    //     console.log(e)
+    //   }
+    // )
+
+    console.log(this.input)
+    ipfs.addJson(this.input,function(err,data){
+      console.log(err)
+      console.log(data)
+    });
   }
 
   onFileChange1(event) {
@@ -147,12 +155,12 @@ export class AppComponent {
     if(event.target.files && event.target.files.length > 0) {
       let file = event.target.files[0];
       // console.log(file,event)
-      if(file.size > 1000000){
-        console.log("File size can not be greater than 1 Mb");
-        this.form.get('file').setValue(null);
-        this.fileInput1.nativeElement.value = "";
-        return false; 
-      }else{
+      // if(file.size > 1000000){
+      //   console.log("File size can not be greater than 1 Mb");
+      //   this.form.get('file').setValue(null);
+      //   this.fileInput1.nativeElement.value = "";
+      //   return false; 
+      // }else{
         // console.log(reader)
         reader.readAsDataURL(file);
         reader.onload = () => {
@@ -162,12 +170,16 @@ export class AppComponent {
             filesize: file.size,
             value: reader.result.split(',')[1]
           })
+          this.input = {
+            path:file.name,
+            content:reader.result
+          }
         };
-      }
+      // }
     }
   }
   formcall(){
-    console.log(this.form.value)
+    // console.log(this.form.value)
     this.posts();
   }
 

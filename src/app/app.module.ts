@@ -10,6 +10,7 @@ import * as Raven from 'raven-js';
 
 import { ServService } from './service/serv.service';
 
+import { ChatModule } from './chat/chat.module';
 Raven
 .config('https://ad566634df2b4b9ba348b15d5efdd664@sentry.io/253700')
 .install();
@@ -29,6 +30,7 @@ export class RavenErrorHandler implements ErrorHandler {
     HttpModule,
     FormsModule,
     ReactiveFormsModule,
+    ChatModule
   ],
   providers: [ServService,{provide: ErrorHandler, useClass: RavenErrorHandler}],
   bootstrap: [AppComponent]

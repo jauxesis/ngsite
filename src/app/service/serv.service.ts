@@ -24,8 +24,8 @@ export class ServService {
 
     this.pdb = new PouchDB("http://45.55.211.36:5984/list/");
 
-    this.getData();
-    this.getScreen();
+    // this.getData();
+    // this.getScreen();
   } 
 
   getData(){

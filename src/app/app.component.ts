@@ -39,7 +39,7 @@ export class AppComponent {
 
     
 
-    // this.gets();
+    this.gets();
   }
 
   gets(){
@@ -50,7 +50,7 @@ export class AppComponent {
     this.http.get("http://localhost:5001/api/v0/cat?arg=QmUVTKsrYJpaxUT7dr9FpKq6AoKHhEM7eG1ZHGL56haKLG")
     .subscribe(
       (data)=>{
-      //  console.log("ipfscatdata1:",data);
+       console.log("ipfscatdata1:",data);
       },
       (e)=>{
        // console.log("ipfserr1:",e)
@@ -82,10 +82,10 @@ export class AppComponent {
     // console.log("apiconf:",ipfs)
     // ipfs.files.get("QmUVTKsrYJpaxUT7dr9FpKq6AoKHhEM7eG1ZHGL56haKLG",(data)=>{
     //   console.log("ipfsdata:",data)
-    // }); 
+    // });  
 
     ipfs.cat("QmUVTKsrYJpaxUT7dr9FpKq6AoKHhEM7eG1ZHGL56haKLG",function(err,data){
-      // console.log("ipfsincatdata:",JSON.stringify(data))
+      console.log("ipfsincatdata:",JSON.stringify(data))
     });
 
 
